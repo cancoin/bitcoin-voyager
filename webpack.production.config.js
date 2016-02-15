@@ -4,7 +4,7 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');
 module.exports = {
     entry: [
         './src/index.js',
-        'bootstrap-sass!./config/bootstrap-sass.config.js'
+        'bootstrap-sass!./bootstrap-sass.config.js'
     ],
     output: {
         path: path.join(__dirname, 'build'),
