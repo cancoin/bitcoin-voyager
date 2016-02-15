@@ -38,6 +38,10 @@ export default class Address extends Component {
     return type == 'spend' ? 'output' : 'spend'
   }
 
+  rowName(type) {
+    return type == 'spend' ? 'Input' : 'Output'
+  }
+
   linkChecksum(row) {
     return this.checksumId({type: this.oppositeRowType(row.type), checksum: row.checksum});
   }
@@ -60,7 +64,7 @@ export default class Address extends Component {
       return <div id={this.checksumId(row)} class="inout_shell">
         <div class="block_line first solid">
           <div class="block_line_tag">TYPE</div>
-          {row.type}
+          {this.rowName(row.type)}
         </div>
         <div class="block_line">
           <div class="block_line_tag alt">AMOUNT</div>
