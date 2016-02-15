@@ -34,9 +34,18 @@ export default class Address extends Component {
     }
   }
 
+  linkChecksum(row) {
+    let type = row.type == 'spend' ? 'output' : 'spend'
+    return this.checksumId({type: type, checksum: row.checksum});
+  }
+
+  checksumId(row) {
+    return `history_${row.type}_${row.checksum}`
+  }
+
   historyView(ctrl) {
     return (row) => {
-      return <div class="inout_shell">
+      return <div id={this.checksumId(row)} class="inout_shell">
         <div class="block_line first solid">
           <div class="block_line_tag">TYPE</div>
           {row.type}
@@ -50,16 +59,16 @@ export default class Address extends Component {
           <a href="#" onclick={this.navigate(`/tx/${row.hash}`)}>{row.hash}</a>
         </div>
         <div class="block_line">
-          <div class="block_line_tag alt">HEIGHT</div>
-          <a href="#" onclick={this.navigate(`/block/${row.height}`)}>{row.height}</a>
-        </div>
-        <div class="block_line">
           <div class="block_line_tag alt">INDEX</div>
           {row.index}
         </div>
         <div class="block_line">
+          <div class="block_line_tag alt">HEIGHT</div>
+          <a href="#" onclick={this.navigate(`/block/${row.height}`)}>{row.height}</a>
+        </div>
+        <div class="block_line">
           <div class="block_line_tag alt">CHECKSUM</div>
-          {row.checksum}
+          <a href={`#${this.linkChecksum(row)}`}>{row.checksum}</a>
         </div>
         <div class="horline"></div>
       </div>

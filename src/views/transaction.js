@@ -84,6 +84,7 @@ export default class Transaction extends Component {
           <div class="block_line_tag alt">SEQUENCE</div>
           {input.sequence}
         </div>
+        <div class="horline"></div>
       </div>
 
     }
@@ -100,6 +101,7 @@ export default class Transaction extends Component {
           <div class="block_line_tag alt">OUTPUT VALUE</div>
           <span>1</span>{Util.satoshiToBtc(output.value)}
         </div>
+        <div class="horline"></div>
       </div>
     }
   }
