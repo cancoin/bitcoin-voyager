@@ -9,8 +9,7 @@ import Block from './views/block'
 import Transaction from './views/transaction'
 import Address from './views/address'
 
-//let URI = "ws://192.99.62.69:9090/api/v1/websocket"
-let URI = "ws://localhost:9090/api/v1/websocket"
+let URI = "ws://127.0.0.1:9090/api/v1/websocket"
 
 {
   let view = {}
@@ -55,7 +54,6 @@ let URI = "ws://localhost:9090/api/v1/websocket"
     vm.socket_connected(false);
     m.redraw('full')
     reconnect_backoff = Math.min(30 * 1000, reconnect_backoff * 2);
-    console.log(reconnect_backoff)
     setTimeout(() => { connectClient(); }, reconnect_backoff)
   }
 
@@ -65,11 +63,7 @@ let URI = "ws://localhost:9090/api/v1/websocket"
 
   let client = connectClient();
 
-  setTimeout(route, 1000);
-
-  client.onMessage = function(message) {
-    console.log(message)
-  }
+  client.onMessage = function(message) {}
 
   let state = {
     client: client,
