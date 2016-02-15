@@ -34,17 +34,29 @@ export default class Address extends Component {
     }
   }
 
+  oppositeRowType(type) {
+    return type == 'spend' ? 'output' : 'spend'
+  }
+
   linkChecksum(row) {
-    let type = row.type == 'spend' ? 'output' : 'spend'
-    return this.checksumId({type: type, checksum: row.checksum});
+    return this.checksumId({type: this.oppositeRowType(row.type), checksum: row.checksum});
   }
 
   checksumId(row) {
     return `history_${row.type}_${row.checksum}`
   }
 
+  findPair(ctrl, row) {
+    return ctrl.history().find((find_row) => {
+      let type = this.oppositeRowType(row.type);
+      return find_row.type === this.oppositeRowType(row.type)
+        && find_row.checksum === row.checksum
+    })
+  }
+
   historyView(ctrl) {
     return (row) => {
+      let pair = this.findPair(ctrl, row)
       return <div id={this.checksumId(row)} class="inout_shell">
         <div class="block_line first solid">
           <div class="block_line_tag">TYPE</div>
@@ -52,23 +64,19 @@ export default class Address extends Component {
         </div>
         <div class="block_line">
           <div class="block_line_tag alt">AMOUNT</div>
-          <span>1</span>{Util.satoshiToBtc(row.value)}
+          <span>1</span>{Util.satoshiToBtc(row.value || pair && pair.value)}
         </div>
         <div class="block_line">
-          <div class="block_line_tag alt">HASH</div>
-          <a href="#" onclick={this.navigate(`/tx/${row.hash}`)}>{row.hash}</a>
-        </div>
-        <div class="block_line">
-          <div class="block_line_tag alt">INDEX</div>
-          {row.index}
-        </div>
-        <div class="block_line">
-          <div class="block_line_tag alt">HEIGHT</div>
+          <div class="block_line_tag alt">BLOCK HEIGHT</div>
           <a href="#" onclick={this.navigate(`/block/${row.height}`)}>{row.height}</a>
         </div>
         <div class="block_line">
-          <div class="block_line_tag alt">CHECKSUM</div>
-          <a href={`#${this.linkChecksum(row)}`}>{row.checksum}</a>
+          <div class="block_line_tag alt">TRANSACTION</div>
+          <a href="#" onclick={this.navigate(`/tx/${row.hash}`)}>{`${row.hash}:${row.index}`}</a>
+        </div>
+        <div class="block_line">
+          <div class="block_line_tag alt">{row.type === 'output' ? 'SPEND' : 'PREVIOUS OUTPUT'}</div>
+          <a href={`#${this.linkChecksum(row)}`}>{pair ? `${pair.hash}:${pair.index}` : 'Unspent'}</a>
         </div>
         <div class="horline"></div>
       </div>
