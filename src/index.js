@@ -9,7 +9,7 @@ import Block from './views/block'
 import Transaction from './views/transaction'
 import Address from './views/address'
 
-let URI = "ws://127.0.0.1:9090/api/v1/websocket"
+let URI = "wss://voyager.cancoin.co/api/v1/websocket"
 
 {
   let view = {}
