@@ -28,7 +28,6 @@ let URI = "wss://voyager.cancoin.co/api/v1/websocket"
   };
 
   let onConnected = (r) => {
-    console.log(r)
     vm.socket_connected(true);
     reconnect_backoff = DEFAULT_RECONNECT_BACKOFF;
 

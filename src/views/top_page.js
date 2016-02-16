@@ -107,7 +107,7 @@ export default class TopPage extends Component {
             </div>
             <div class="index_block_nonce">
               <div class="index_block_nonce_tag">Nonce</div>
-              {header.nonce}
+              0x{header.nonce.toString(16)}
             </div>
           </div>
           </a>

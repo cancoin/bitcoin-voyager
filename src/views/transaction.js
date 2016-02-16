@@ -82,7 +82,7 @@ export default class Transaction extends Component {
         </div>
         <div class="block_line">
           <div class="block_line_tag alt">SEQUENCE</div>
-          {input.sequence}
+          0x{input.sequence.toString(16)}
         </div>
         <div class="horline"></div>
       </div>
@@ -100,6 +100,10 @@ export default class Transaction extends Component {
         <div class="block_line">
           <div class="block_line_tag alt">OUTPUT VALUE</div>
           <span>1</span>{Util.satoshiToBtc(output.value)}
+        </div>
+        <div class="block_line">
+          <div class="block_line_tag alt">SCRIPT</div>
+          {output.script_asm}
         </div>
         <div class="horline"></div>
       </div>
@@ -134,7 +138,7 @@ export default class Transaction extends Component {
             </div>
             <div class="block_line">
               <div class="block_line_tag">BLOCK NUMBER</div>
-              <a href="#" onclick={this.navigate(`/block/${ctrl.height()}`)}>{ctrl.height() || this.vm.last_height() + '?'}</a>
+              <a href="#" onclick={this.navigate(`/block/${ctrl.height()}`)}>{ctrl.height() || 'Unconfirmed Transaction' }</a>
             </div>
           </div>
         </div>

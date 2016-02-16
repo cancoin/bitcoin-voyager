@@ -185,11 +185,11 @@ export default class Block extends Component {
             </div>
             <div class="block_line">
               <div class="block_line_tag">NONCE</div>
-              {block.nonce}
+              0x{block.nonce.toString(16)}
             </div>
             <div class="block_line">
               <div class="block_line_tag">BITS</div>
-              {block.bits}
+              0x{block.bits.toString(16)}
             </div>
             <div class="block_line">
               <div class="block_line_tag">BLOCK VERSION</div>
@@ -198,6 +198,10 @@ export default class Block extends Component {
             <div class="block_line">
               <div class="block_line_tag">PREVIOUS BLOCK HASH</div>
               <a href="#" onclick={this.navigate(`/block/${block.previous_block_hash}`)}>{block.previous_block_hash}</a>
+            </div>
+            <div class="block_line">
+              <div class="block_line_tag">TRANSACTION COUNT</div>
+              {ctrl.block_transactions().length || '...'}
             </div>
           </div>
         </div>
