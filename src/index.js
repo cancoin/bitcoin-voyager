@@ -71,7 +71,7 @@ let URI = "wss://voyager.cancoin.co/api/v1/websocket"
 
   let route = () => {
     m.route.mode = 'search'
-    router = router || m.route(document.body, "/", {
+    router = router || m.route(document.getElementById('container'), "/", {
       "/": view.top_page,
       "/block/:hash": view.block,
       "/tx/:hash": view.transaction,

@@ -154,7 +154,10 @@ export default class TopPage extends Component {
               return <div class="index_trans_line">
                 <div class="index_trans_amount"><span>1</span>{Util.satoshiToBtc(tx.value)}</div>
                 {m('div', {style: `background-color: #${tx.hash.slice(0, 6)}; float:left; width:8px; height:8px; border-radius:8px; margin-right:20px; margin-top:3px;`})}
-                <a href="#" onclick={this.navigate(`/tx/${tx.hash}`)} class="index_trans_address">{tx.hash}</a>
+                <div class="index_trans_address">
+                  <a href="#" onclick={this.navigate(`/tx/${tx.hash}`)}>{tx.hash}</a>
+                </div>
+                <br></br>
               </div>
             })}
           </div>
