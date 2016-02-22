@@ -169,7 +169,7 @@ export default class Block extends Component {
             </div>
             <div class="block_line">
               <div class="block_line_icon">7</div>
-              {block ? new Date(block.timestamp * 1000) : ''}
+              {block ? Util.formatTime(block.timestamp * 1000) : ''}
             </div>
             <div class="block_line">
               <div class="block_line_tag">BLOCK SIZE</div>
