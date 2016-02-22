@@ -20,7 +20,7 @@ export default class Address extends Component {
 
   fetchHistory(ctrl) {
     this.client.fetchAddressHistory2(ctrl.address(), ctrl.count()).then((resp) => {
-      ctrl.history(resp.history)
+      ctrl.history(resp.history.sort(this.historySort))
       m.redraw('diff')
     }).catch((error) => {
       alert(error)
@@ -56,6 +56,16 @@ export default class Address extends Component {
       return find_row.type === this.oppositeRowType(row.type)
         && find_row.checksum === row.checksum
     })
+  }
+
+  historySort(row_a, row_b) {
+    let height_a = row_a.height || Infinity;
+    let height_b = row_b.height || Infinity;
+    if (height_a > height_b) return -1;
+    if (height_a < height_b) return 1;
+    if (row_a.hash > row_b.hash) return 1;
+    if (row_a.hash < row_b.hash) return -1;
+    return 0;
   }
 
   historyView(ctrl) {
