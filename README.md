@@ -8,7 +8,7 @@ Please see the guide at [https://github.com/cancoin/bitcoin-voyager-api](https:/
 
 ## Getting Started
 
-To get the UI source code and install all of the necessary components to run Voyager locally in development mode, and you can run these commands:
+To get the UI source code and install all of the necessary components to run Voyager locally in development mode, you can run these commands:
 
 ```
 git clone git@github.com:voyager.git && cd voyager
@@ -66,7 +66,7 @@ To add new images and re-build your local development environment, do the follow
 require('./images/yourimage.jpg?output= yourimage.jpg');
 ```
 
-3. cd into your bitcoin-voyager repository and re-install NPM:
+3. cd into your bitcoin-voyager repository and re-install using NPM:
 
 ```
 npm install
