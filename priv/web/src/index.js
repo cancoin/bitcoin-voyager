@@ -1,7 +1,7 @@
 require('./index.html?output=index.html');
-require('./images/spinner.svg?output=spinner.svg');
-require('./images/favicon.png?output=favicon.png');
-require('./images/web_img.jpg?output=web_img.jpg');
+require('./images/spinner.svg?output=/assets/spinner.svg');
+require('./images/favicon.png?output=/assets/favicon.png');
+require('./images/web_img.jpg?output=/assets/web_img.jpg');
 
 import VoyagerClient from './voyager_client'
 import TopPage from './views/top_page'

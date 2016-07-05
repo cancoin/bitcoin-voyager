@@ -103,6 +103,7 @@ export default class Address extends Component {
       <button class="" onclick={this.loadMoreHistory(ctrl)}>Load More</button>
     </div>
   }
+  
   view(ctrl) {
     return <div>
       {header(this)}

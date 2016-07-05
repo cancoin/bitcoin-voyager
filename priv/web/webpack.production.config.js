@@ -1,6 +1,9 @@
 var path = require('path');
 var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
+
+var srcDiir = path.join(__dirname, 'src')
+
 module.exports = {
     entry: [
         './src/index.js',
@@ -21,7 +24,7 @@ module.exports = {
         new webpack.optimize.OccurenceOrderPlugin(true),
         new webpack.optimize.UglifyJsPlugin({
             sourceMap: true,
-            mangle: true,
+            mangle: false,
             compress: { warnings: false }
         })
     ],
@@ -71,3 +74,4 @@ module.exports = {
         ]
     }
 };
+
