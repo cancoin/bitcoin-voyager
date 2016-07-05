@@ -1,7 +1,7 @@
-Bitcoin Voyager API
-=================
+Bitcoin Voyager
+===============
 
-An HTTP and Websocket API server for querying [Libbitcoin Server](https://github.com/libbitcoin/libbitcoin-server). It is written in Elixir using the Cowboy HTTP Server and connects to Libbitcoin Server via a ZeroMQ C-Port process pool.
+A Websocket and REST server for querying [Libbitcoin Server](https://github.com/libbitcoin/libbitcoin-server). It is written in Elixir using the Cowboy HTTP Server and connects to Libbitcoin Server via a ZeroMQ C-Port process pool.
 
 ### Configuration
 
