@@ -11,7 +11,7 @@ module.exports = {
     ],
     output: {
         path: path.join(__dirname, 'build'),
-        filename: 'bundle.js'
+        filename: 'bundle.min.js'
     },
     resolve: { root: [path.join(__dirname, 'bower_components')] },
     plugins: [

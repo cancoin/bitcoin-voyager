@@ -10,7 +10,7 @@ module.exports = {
     ],
     output: {
         path: path.join(__dirname, 'build'),
-        filename: 'voyager_client.js'
+        filename: 'voyager_client.min.js'
     },
     resolve: { root: [path.join(__dirname, 'bower_components')] },
     plugins: [
