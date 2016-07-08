@@ -12,7 +12,7 @@
   "gun": {:git, "https://github.com/ninenines/gun.git", "d88f3675dba9e066ef339789d8c223358f744aac", [ref: "master"]},
   "inflex": {:hex, :inflex, "1.5.0"},
   "jsx": {:hex, :jsx, "2.6.2"},
-  "libbitcoin": {:git, "https://github.com/cancoin/libbitcoin-nif.git", "4b19f65b0df453a497c57cc80f696b409a7c7564", []},
+  "libbitcoin": {:git, "https://github.com/cancoin/libbitcoin-nif.git", "51123691ffa3ec19b6bcdb4f0edc311bb01dda0a", []},
   "libbitcoin_client": {:git, "https://github.com/cancoin/elixir-libbitcoin-client.git", "3b01f0a95e474b32b9afb3ae2f253499ba0003f9", []},
   "neotoma": {:hex, :neotoma, "1.7.3"},
   "providers": {:hex, :providers, "1.4.1"},
