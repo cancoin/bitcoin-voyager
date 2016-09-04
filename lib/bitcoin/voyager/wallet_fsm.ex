@@ -16,6 +16,14 @@ defmodule Bitcoin.Voyager.WalletFSM do
     :gen_fsm.start_link __MODULE__, [addresses, page, per_page, parent], []
   end
 
+  def init([addresses, page, per_page, parent]) when is_binary(page) do
+    {page, ""} = Integer.parse(page)
+    init([addresses, page, per_page, parent])
+  end
+  def init([addresses, page, per_page, parent]) when is_binary(per_page) do
+    {per_page, ""} = Integer.parse(per_page)
+    init([addresses, page, per_page, parent])
+  end
   def init([addresses, page, per_page, parent]) do
     addresses_set = Enum.reduce addresses, HashSet.new, &HashSet.put(&2, &1)
     state = %State{addresses: addresses_set, parent: parent, page: page, per_page: per_page}
