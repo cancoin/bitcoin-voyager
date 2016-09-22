@@ -12,8 +12,9 @@ defmodule BitcoinVoyager.Mixfile do
 
   def application do
     [applications: [
-      :logger, :cowboy, :exjsx,
+      :logger, :exjsx,
       :gproc, :base58, :inflex,
+      :ranch, :cowlib, :cowboy,
       :libbitcoin_client, :libbitcoin],
      mod: {Bitcoin.Voyager, []}]
  end
