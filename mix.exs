@@ -24,9 +24,9 @@ defmodule BitcoinVoyager.Mixfile do
       {:exjsx, "~> 3.2.0"},
       {:gproc, "~> 0.5.0"},
       {:inflex, "~> 1.5.0"},
-      {:ranch, "~> 1.1.0", override: true},
-      {:cowlib, "~> 1.3.0", override: true},
-      {:cowboy, github: "ninenines/cowboy", ref: "2.0.0-pre.3"},
+      {:ranch, "~> 1.1.0", override: true, compile: gnu_make},
+      {:cowlib, "~> 1.3.0", override: true, compile: gnu_make},
+      {:cowboy, github: "ninenines/cowboy", ref: "2.0.0-pre.3", compile: gnu_make},
       {:libbitcoin_client, github: "cancoin/elixir-libbitcoin-client"},
       {:libbitcoin, github: "cancoin/libbitcoin-nif"},
       {:base58, github: "cancoin/erl-base58"}
@@ -39,4 +39,12 @@ defmodule BitcoinVoyager.Mixfile do
     ]
   end
   defp deps(_), do: []
+
+  defp gnu_make do
+    case System.cmd "uname", [] do
+      {"FreeBSD\n",0} -> "gmake"
+      _other -> "make"
+    end
+  end
+
 end
