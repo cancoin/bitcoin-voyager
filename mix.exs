@@ -16,11 +16,11 @@ defmodule BitcoinVoyager.Mixfile do
       :gproc, :base58, :inflex,
       :libbitcoin_client, :libbitcoin],
      mod: {Bitcoin.Voyager, []}]
-  end
+ end
 
   defp deps do
     [
-      {:exrm, "~> 0.19.8"},
+      {:exrm, "~> 1.0.8"},
       {:exjsx, "~> 3.2.0"},
       {:gproc, "~> 0.5.0"},
       {:inflex, "~> 1.5.0"},
