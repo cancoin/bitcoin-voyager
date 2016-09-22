@@ -25,7 +25,7 @@ defmodule BitcoinVoyager.Mixfile do
       {:gproc, "~> 0.5.0"},
       {:inflex, "~> 1.5.0"},
       {:ranch, "~> 1.1.0", override: true, compile: gnu_make},
-      {:cowlib, "~> 1.3.0", override: true, compile: gnu_make},
+      {:cowlib, github: "ninenines/cowlib", override: true, ref: "master", compile: gnu_make},
       {:cowboy, github: "ninenines/cowboy", ref: "2.0.0-pre.3", compile: gnu_make},
       {:libbitcoin_client, github: "cancoin/elixir-libbitcoin-client"},
       {:libbitcoin, github: "cancoin/libbitcoin-nif"},

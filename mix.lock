@@ -3,7 +3,7 @@
   "cf": {:hex, :cf, "0.2.1"},
   "conform": {:hex, :conform, "0.17.0"},
   "cowboy": {:git, "https://github.com/ninenines/cowboy.git", "dbb636034f20736e16eb9d6c809217c9525b6cbd", [ref: "2.0.0-pre.3"]},
-  "cowlib": {:hex, :cowlib, "1.3.0"},
+  "cowlib": {:git, "https://github.com/ninenines/cowlib.git", "8cf98c9f3d1292c1b08fca5ca99772ae912eaa86", [ref: "master"]},
   "czmq": {:git, "https://github.com/gar1t/erlang-czmq.git", "50605c06a63fd178affdbf620ed63f7ced56bc3d", []},
   "erlware_commons": {:hex, :erlware_commons, "0.21.0"},
   "exjsx": {:hex, :exjsx, "3.2.0"},
