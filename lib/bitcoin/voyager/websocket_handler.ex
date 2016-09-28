@@ -19,13 +19,21 @@ defmodule Bitcoin.Voyager.WebSocketHandler do
   end
 
   def websocket_info({:libbitcoin_client, _command, ref, reply}, req, %State{requests: requests} = state) do
-    {:ok, %{id: id, module: module}} = Map.fetch(requests, ref)
+    {:ok, %{id: id, params: params, module: module}} = Map.fetch(requests, ref)
     requests = Map.delete(requests, ref)
     state = %State{state | requests: requests}
     case module.transform_reply(reply) do
-      {:ok, reply} ->
-        json = encode_reply(id, reply)
-        {:reply, {:text, json}, req, state}
+      {:ok, transformed_reply} ->
+        case cache_command(module, params, reply) do
+          :not_found ->
+            {:ok, ref} = send_command(module.command, params)
+            new_requests = Map.put(requests, ref, %{id: id, module: module, params: params})
+            {:ok, req, %State{state | requests: new_requests}}
+          {:ok, ref} ->
+            new_requests = Map.put(requests, ref, %{id: id, module: module, params: params})
+            json = encode_reply(id, transformed_reply)
+            {:reply, {:text, json}, req, %State{state | requests: new_requests}}
+        end
       {:error, reason} ->
         json = encode_error(id, reason)
         {:reply, {:text, json}, req, state}
@@ -41,6 +49,31 @@ defmodule Bitcoin.Voyager.WebSocketHandler do
   def websocket_info({<<"subscribe.", type :: binary>> = cmd, reply}, req, state)
     when type in ["block", "transaction", "heartbeat"]  do
     json = encode_reply(cmd, reply)
+    {:reply, {:text, json}, req, state}
+  end
+  def websocket_info({:cherly_response, ref, :not_found}, req, %State{requests: requests} = state) do
+    {:ok, %{id: id, params: params, module: module} = payload} = Map.fetch(requests, ref)
+    requests = Map.delete(requests, ref)
+    IO.inspect {:cache_not_found, module, params}
+    {:ok, ref} = send_command(module.command, params)
+    new_requests = Map.put(requests, ref, %{id: id, module: module, params: params})
+    {:ok, req, %State{state | requests: new_requests}}
+  end
+  def websocket_info({:cherly_response, ref, :ok}, req,  %State{requests: requests} = state) do
+    new_requests = Map.delete(requests, ref)
+    {:ok, req, %State{state | requests: new_requests}}
+  end
+  def websocket_info({:cherly_response, ref, {:ok, reply}}, req, %State{requests: requests} = state) do
+    {:ok, %{id: id, params: params, module: module} = payload} = Map.fetch(requests, ref)
+    requests = Map.delete(requests, ref)
+    state = %State{state | requests: requests}
+    send_cached(module, payload, reply, req, state)
+  end
+  def websocket_info({:cherly_error, ref, reason}, req, %State{requests: requests} = state) do
+    {:ok, %{id: id, params: params, module: module} = payload} = Map.fetch(requests, ref)
+    requests = Map.delete(requests, ref)
+    state = %State{state | requests: requests}
+    json = encode_error(id, reason)
     {:reply, {:text, json}, req, state}
   end
 
@@ -64,30 +97,70 @@ defmodule Bitcoin.Voyager.WebSocketHandler do
     end
     {:ok, req, state}
   end
-  def handle_command(%{command: command} = payload, req, state) do
+  def handle_command(%{command: command, id: id, params: params} = payload, req, state) do
     case find_module(command) do
-      {:error, _reason} ->
-        {:ok, req, state}
-      {:ok, module} -> do_handle_command(module, payload, req, state)
+      {:error, reason} ->
+        json = encode_error(id, reason)
+        {:reply, {:text, json}, req, state}
+      {:ok, module} ->
+        case module.transform_args(params) do
+          {:ok, params} ->
+            do_handle_command(module, %{payload | params: params}, req, state)
+          {:error, reason} ->
+            json = encode_error(id, reason)
+            {:reply, {:text, json}, req, state}
+        end
     end
   end
 
-  defp do_handle_command(module, %{id: id, params: params}, req, %{requests: requests} = state) do
-    case module.transform_args(params) do
-      {:ok, args} ->
-        {:ok, ref} = send_command(module.command, args)
-        requests = Map.put(requests, ref, %{id: id, module: module})
-        {:ok, req, %State{state | requests: requests}}
-      {:error, reason} ->
-        # send error message
-        IO.inspect {:error, module, params, reason}
-        {:ok, req, state}
+  defp do_handle_command(module, %{id: id, params: params} = payload, req, %State{requests: requests} = state) do
+    case cached_command(module, params) do
+      :not_found ->
+        {:ok, ref} = send_command(module.command, params)
+        new_requests = Map.put(requests, ref, %{id: id, module: module, params: params})
+        {:ok, req, %State{state | requests: new_requests}}
+      {:ok, ref} ->
+        new_requests = Map.put(requests, ref, %{id: id, module: module, params: params})
+        {:ok, req, %State{state | requests: new_requests}}
     end
   end
 
   defp send_command(command, args) do
     client = :pg2.get_closest_pid(Bitcoin.Voyager.Client)
     apply Libbitcoin.Client, command, [client] ++ args ++ [self]
+  end
+
+  defp cached_command(module, params) do
+    case module.cache_name do
+      nil ->
+        :not_found
+      name ->
+        :cherly_server.cast(name, {:get, module.cache_key(params)})
+    end
+  end
+
+  defp cache_command(module, params, value) do
+    case module.cache_name do
+      nil ->
+        :not_found
+      name ->
+        :cherly_server.cast(name, {
+          :put,
+          module.cache_key(params),
+          module.cache_serialize(value),
+          module.cache_ttl})
+    end
+  end
+
+  defp send_cached(module, %{id: id, params: params}, reply, req, state) do
+    case module.cache_deserialize(reply) |> module.transform_reply do
+      {:ok, reply} ->
+        json = encode_reply(id, reply)
+        {:reply, {:text, json}, req, state}
+      {:error, reason} ->
+        json = encode_error(id, reason)
+        {:reply, {:text, json}, req, state}
+    end
   end
 
   defp encode_reply(id, reply) do

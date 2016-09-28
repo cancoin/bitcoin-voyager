@@ -9,6 +9,7 @@ defmodule Bitcoin.Voyager do
       {:ok, config} ->
         write_pid!
         Logger.info "Starting Bitcoin Explorer on port #{config.port}"
+        :ok = Bitcoin.Voyager.Cache.start_link
         {:ok, _} = :cowboy.start_http(:http, 100,
                                       [port: config.port],
                                       [env: [dispatch: dispatch(config)]])

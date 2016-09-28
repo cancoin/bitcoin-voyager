@@ -1,5 +1,6 @@
 defmodule Bitcoin.Voyager.Handlers.Address.History2Handler do
   alias Bitcoin.Voyager.Handlers.Address
+  use Bitcoin.Voyager.Handler
 
   def command, do: :address_history2
 
@@ -35,4 +36,12 @@ defmodule Bitcoin.Voyager.Handlers.Address.History2Handler do
       |> Map.put(:checksum, Integer.to_string(value, 16))
       |> format_row
   end
+
+  def cache_key([address, count]) do
+    "#{address}#{:binary.encode_unsigned(count)}"
+  end
+
+  def cache_ttl, do: 10
+
+  def cache_name, do: :history2
 end

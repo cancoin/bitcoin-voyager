@@ -1,6 +1,5 @@
 defmodule Bitcoin.Voyager.Handlers.Protocol.TotalConnectionsHandler do
-  @moduledoc """
-  """
+  use Bitcoin.Voyager.Handler
 
   def command, do: :total_connections
 

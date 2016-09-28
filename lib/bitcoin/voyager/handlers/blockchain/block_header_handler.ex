@@ -1,4 +1,5 @@
 defmodule Bitcoin.Voyager.Handlers.Blockchain.BlockHeaderHandler do
+  use Bitcoin.Voyager.Handler
 
   def command, do: :block_header
 
@@ -25,6 +26,14 @@ defmodule Bitcoin.Voyager.Handlers.Blockchain.BlockHeaderHandler do
   end
   defp parse_block_header(_) do
     {:error, :invalid}
+  end
+
+  def cache_name, do: :block_header
+
+  def cache_ttl, do: 60
+
+  def cache_key([height]) do
+    :binary.encode_unsigned(height)
   end
 
 end

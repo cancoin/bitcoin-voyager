@@ -1,5 +1,6 @@
 defmodule Bitcoin.Voyager.Handlers.TransactionPool.ValidateHandler do
   alias Bitcoin.Voyager.Util
+  use Bitcoin.Voyager.Handler
 
   def command, do: :validate
 

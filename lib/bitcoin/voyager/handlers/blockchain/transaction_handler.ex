@@ -1,8 +1,6 @@
 defmodule Bitcoin.Voyager.Handlers.Blockchain.TransactionHandler do
   alias Bitcoin.Voyager.Util
-
-  @moduledoc """
-  """
+  use Bitcoin.Voyager.Handler
 
   def command, do: :blockchain_transaction
 
@@ -18,4 +16,11 @@ defmodule Bitcoin.Voyager.Handlers.Blockchain.TransactionHandler do
     {:ok, %{transaction: tx}}
   end
 
+  def cache_name, do: :transaction
+
+  def cache_ttl, do: 0
+
+  def cache_key([hash]) do
+    hash
+  end
 end

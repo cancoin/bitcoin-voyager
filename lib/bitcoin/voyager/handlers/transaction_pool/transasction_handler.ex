@@ -1,5 +1,6 @@
 defmodule Bitcoin.Voyager.Handlers.TransactionPool.TransactionHandler do
   alias Bitcoin.Voyager.Util
+  use Bitcoin.Voyager.Handler
 
   def command, do: :pool_transaction
 
@@ -15,4 +16,11 @@ defmodule Bitcoin.Voyager.Handlers.TransactionPool.TransactionHandler do
     {:ok, %{transaction: tx}}
   end
 
+  def cache_name, do: :transaction
+
+  def cache_ttl, do: 0
+
+  def cache_key([hash]) do
+    hash
+  end
 end
