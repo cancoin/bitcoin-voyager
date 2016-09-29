@@ -17,7 +17,6 @@ defmodule Bitcoin.Voyager.RESTHandler do
   def info({:libbitcoin_client, _command, ref, reply}, req, %{ref: ref, params: params, module: module} = state) do
     case module.transform_reply(reply) do
       {:ok, transformed_reply} ->
-        IO.inspect {:cache, module, params, reply}
         {:ok, json} = JSX.encode(transformed_reply)
         req = :cowboy_req.reply(200, [], json, req)
         :ok = cache_command(module, params, reply)
@@ -54,7 +53,6 @@ defmodule Bitcoin.Voyager.RESTHandler do
         req = :cowboy_req.reply(200, [], json, req)
         {:ok, req, %{}}
       :not_found ->
-        IO.inspect "not found"
         {:ok, ref} = send_command(module.command, params)
         {:cowboy_loop, req, %{ref: ref, params: params, module: module}, 2000}
     end

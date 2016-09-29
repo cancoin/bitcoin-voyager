@@ -26,7 +26,6 @@ defmodule Bitcoin.Voyager.Handlers.Blockchain.BlockTransactionHashesHandler do
   def cache_ttl, do: 0
 
   def cache_key([hash]) do
-    IO.inspect hash
     hash
   end
 
@@ -38,7 +37,10 @@ defmodule Bitcoin.Voyager.Handlers.Blockchain.BlockTransactionHashesHandler do
     cache_deserialize(hashes, [])
   end
 
-  defp cache_deserialize(<<>>, acc), do: Enum.reverse(acc)
+  defp cache_deserialize(<<>>, acc) do
+    Enum.reverse(acc)
+  end
+
   defp cache_deserialize(<<hash :: binary-size(32), tail :: binary>>, acc) do
     cache_deserialize(tail, [hash|acc])
   end

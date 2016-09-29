@@ -20,7 +20,6 @@ defmodule Bitcoin.Voyager.Handlers.Blockchain.LastHeightHandler do
   def cache_name, do: :height
 
   def cache_deserialize(value) do
-    IO.inspect {:vvv, value}
     :binary.decode_unsigned(value)
   end
 end
