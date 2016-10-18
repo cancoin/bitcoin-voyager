@@ -14,7 +14,7 @@
   "inflex": {:hex, :inflex, "1.5.0"},
   "jsx": {:hex, :jsx, "2.6.2"},
   "libbitcoin": {:git, "https://github.com/cancoin/libbitcoin-nif.git", "51123691ffa3ec19b6bcdb4f0edc311bb01dda0a", []},
-  "libbitcoin_client": {:git, "https://github.com/cancoin/elixir-libbitcoin-client.git", "3b01f0a95e474b32b9afb3ae2f253499ba0003f9", []},
+  "libbitcoin_client": {:git, "https://github.com/cancoin/elixir-libbitcoin-client.git", "b1338c80c904f9743f59322dc4b3d2c45f8c6038", []},
   "neotoma": {:hex, :neotoma, "1.7.3"},
   "providers": {:hex, :providers, "1.6.0"},
   "ranch": {:hex, :ranch, "1.1.0"},

@@ -51,6 +51,9 @@ defmodule Bitcoin.Voyager.RESTHandler do
   end
 
   defp extract_request_params(req) do
+    extract_request_params(req, :cowboy_req.method(req))
+  end
+  defp extract_request_params(req, "GET") do
     bindings = :cowboy_req.bindings(req)
     qs = :cowboy_req.parse_qs(req)
     bindings_map = Enum.into(bindings, %{})
@@ -58,5 +61,16 @@ defmodule Bitcoin.Voyager.RESTHandler do
     args = Map.merge(qs_map, bindings_map)
     {args, req}
   end
+  defp extract_request_params(req, "POST") do
+    {:ok, form_data, req} = :cowboy_req.body_qs(req)
+    IO.inspect form_data
+    args = Enum.into(form_data, %{}) |> Util.atomify
+    {args, req}
+  end
+  defp extract_request_params(req, _) do
+    {%{}, req}
+  end
+
+
 
 end
