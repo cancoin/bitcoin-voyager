@@ -35,4 +35,5 @@ defmodule Bitcoin.Voyager.Util do
       ({k,v}) -> {String.to_atom(k), v}
     end) |> Enum.into(%{})
   end
+
 end

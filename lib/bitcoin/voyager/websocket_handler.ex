@@ -1,5 +1,6 @@
 defmodule Bitcoin.Voyager.WebSocketHandler do
   alias Bitcoin.Voyager.Util
+  alias Bitcoin.Voyager.Cache
 
   defmodule State do
     defstruct requests: %{}
@@ -24,7 +25,7 @@ defmodule Bitcoin.Voyager.WebSocketHandler do
     state = %State{state | requests: requests}
     case module.transform_reply(reply) do
       {:ok, transformed_reply} ->
-        case cache_command(module, params, reply) do
+        case Cache.put(module, params, reply) do
           :not_found ->
             {:ok, ref} = send_command(module.command, params)
             new_requests = Map.put(requests, ref, %{id: id, module: module, params: params})
@@ -114,7 +115,7 @@ defmodule Bitcoin.Voyager.WebSocketHandler do
   end
 
   defp do_handle_command(module, %{id: id, params: params} = payload, req, %State{requests: requests} = state) do
-    case cached_command(module, params) do
+    case Cache.get(module, params) do
       :not_found ->
         {:ok, ref} = send_command(module.command, params)
         new_requests = Map.put(requests, ref, %{id: id, module: module, params: params})
@@ -130,37 +131,9 @@ defmodule Bitcoin.Voyager.WebSocketHandler do
     apply Libbitcoin.Client, command, [client] ++ args ++ [self]
   end
 
-  defp cached_command(module, params) do
-    case module.cache_name do
-      nil ->
-        :not_found
-      name ->
-        :cherly_server.cast(name, {:get, module.cache_key(params)})
-    end
-  end
-
-  defp cache_command(module, params, value) do
-    case module.cache_name do
-      nil ->
-        :not_found
-      name ->
-        :cherly_server.cast(name, {
-          :put,
-          module.cache_key(params),
-          module.cache_serialize(value),
-          module.cache_ttl})
-    end
-  end
-
   defp send_cached(module, %{id: id, params: params}, reply, req, state) do
-    case module.cache_deserialize(reply) |> module.transform_reply do
-      {:ok, reply} ->
-        json = encode_reply(id, reply)
-        {:reply, {:text, json}, req, state}
-      {:error, reason} ->
-        json = encode_error(id, reason)
-        {:reply, {:text, json}, req, state}
-    end
+    json = encode_reply(id, reply)
+    {:reply, {:text, json}, req, state}
   end
 
   defp encode_reply(id, reply) do

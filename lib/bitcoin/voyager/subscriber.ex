@@ -1,5 +1,8 @@
 defmodule Bitcoin.Voyager.Subscriber do
   alias Libbitcoin.Client.Sub, as: Subscriber
+  alias Bitcoin.Voyager.Util
+  alias Bitcoin.Voyager.Handlers.Blockchain
+  alias Bitcoin.Voyager.Cache
   import Logger
   use GenServer
 
@@ -27,7 +30,14 @@ defmodule Bitcoin.Voyager.Subscriber do
   end
 
   def broadcast_payload(:transaction = type, payload) when is_binary(payload) do
-    broadcast_payload(type, :libbitcoin.tx_decode(payload))
+    case :libbitcoin.tx_decode(payload) do
+      %{hash: hash} = transaction ->
+        hash = Base.decode16!(hash, case: :lower)
+        :ok = Cache.put(Blockchain.TransactionHandler, [hash], payload)
+        broadcast_payload(type, transaction)
+      _ ->
+        :ok
+    end
   end
   def broadcast_payload(type, payload) do
     :gproc.send({:p, :l, "subscribe.#{type}"}, {"subscribe.#{type}", payload})

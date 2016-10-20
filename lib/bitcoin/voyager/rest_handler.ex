@@ -1,5 +1,6 @@
 defmodule Bitcoin.Voyager.RESTHandler do
   alias Bitcoin.Voyager.Util
+  alias Bitcoin.Voyager.Cache
 
   require Logger
 
@@ -19,7 +20,7 @@ defmodule Bitcoin.Voyager.RESTHandler do
       {:ok, transformed_reply} ->
         {:ok, json} = JSX.encode(transformed_reply)
         req = :cowboy_req.reply(200, [], json, req)
-        :ok = cache_command(module, params, reply)
+        :ok = Cache.put(module, params, reply)
         {:stop, req, state}
       {:error, reason} ->
         Logger.debug "transform error #{module}"
@@ -46,10 +47,9 @@ defmodule Bitcoin.Voyager.RESTHandler do
   end
 
   def do_command(module, params, req) do
-    case cached_command(module, params) do
+    case Cache.get(module, params) do
       {:ok, value} ->
-        {:ok, transformed_reply} = module.cache_deserialize(value) |> module.transform_reply
-        {:ok, json} = JSX.encode(transformed_reply)
+        {:ok, json} = JSX.encode(value)
         req = :cowboy_req.reply(200, [], json, req)
         {:ok, req, %{}}
       :not_found ->
@@ -61,24 +61,6 @@ defmodule Bitcoin.Voyager.RESTHandler do
   def send_command(command, args) do
     client = :pg2.get_closest_pid(Bitcoin.Voyager.Client)
     apply Libbitcoin.Client, command, [client] ++ args ++ [self]
-  end
-
-  defp cached_command(module, params) do
-    case module.cache_name do
-      nil -> :not_found
-      name -> :cherly_server.get(name, module.cache_key(params))
-    end
-  end
-
-  defp cache_command(module, params, value) do
-    case module.cache_name do
-      nil -> :ok
-      name ->
-        :cherly_server.put(name,
-          module.cache_key(params),
-          module.cache_serialize(value),
-          module.cache_ttl)
-    end
   end
 
   defp extract_request_params(req) do
