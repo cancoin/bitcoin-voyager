@@ -9,6 +9,7 @@ defmodule Bitcoin.Voyager do
       {:ok, config} ->
         write_pid!
         Logger.info "Starting Bitcoin Explorer on port #{config.port}"
+        :ok = Bitcoin.Voyager.Cache.start_link
         {:ok, _} = :cowboy.start_http(:http, 100,
                                       [port: config.port],
                                       [env: [dispatch: dispatch(config)]])
@@ -38,8 +39,8 @@ defmodule Bitcoin.Voyager do
              { '/api/v1/protocol/total_connections', Voyager.RESTHandler, [Voyager.Handlers.Protocol.TotalConnectionsHandler] },
              { '/api/v1/wallet', Voyager.WalletHandler, [] },
              { '/api/v1/websocket', Voyager.WebSocketHandler, [] },
-             {'/', :cowboy_static, {:priv_file, :bitcoin_voyager, 'web/build/index.html'}},
-             { '/assets/[...]', :cowboy_static, {:priv_dir, :bitcoin_voyager, 'web/build'}}
+             {'/', :cowboy_static, {:priv_file, :bitcoin_voyager, 'web/build/assets/index.html'}},
+             { '/assets/[...]', :cowboy_static, {:priv_dir, :bitcoin_voyager, 'web/build/assets'}}
            ] }
      ])
   end

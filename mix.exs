@@ -15,7 +15,8 @@ defmodule BitcoinVoyager.Mixfile do
       :logger, :exjsx,
       :gproc, :base58, :inflex,
       :ranch, :cowlib, :cowboy,
-      :libbitcoin_client, :libbitcoin],
+      :libbitcoin_client, :libbitcoin,
+      :cherly],
      mod: {Bitcoin.Voyager, []}]
  end
 
@@ -30,7 +31,8 @@ defmodule BitcoinVoyager.Mixfile do
       {:cowboy, github: "ninenines/cowboy", ref: "2.0.0-pre.3", compile: gnu_make},
       {:libbitcoin_client, github: "cancoin/elixir-libbitcoin-client"},
       {:libbitcoin, github: "cancoin/libbitcoin-nif"},
-      {:base58, github: "cancoin/erl-base58"}
+      {:base58, github: "cancoin/erl-base58"},
+      {:cherly, github: "lastcanal/cherly", branch: "develop"}
     ]
   end
 

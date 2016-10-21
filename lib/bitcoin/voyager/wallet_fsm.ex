@@ -1,6 +1,9 @@
 defmodule Bitcoin.Voyager.WalletFSM do
   alias __MODULE__, as: State
   alias Libbitcoin.Client
+  alias Bitcoin.Voyager.Util
+  alias Bitcoin.Voyager.Handlers.Blockchain
+  alias Bitcoin.Voyager.Cache
 
   defstruct [addresses: HashSet.new, parent: nil, page: 0, per_page: 10,
              ref: nil, height: -1, txrefs: [], wallet: nil, transactions: %{}]
@@ -56,39 +59,39 @@ defmodule Bitcoin.Voyager.WalletFSM do
       {:next_state, :history, state}
     end
   end
-  def handle_info({:libbitcoin_client, "address.fetch_history2", ref, history}, :history, %State{ref: refs, height: height} = state) do
-    refs = Map.delete(refs, ref)
-    {:ok, state} = map_wallet(history, %State{state | ref: refs})
-    if Map.size(refs) == 0 do
-      wallet = reduce_wallet(state.txrefs)
-      wallet = %{wallet | height: height}
-      if length(wallet[:transactions]) > 0 do
-          {:ok, state} = fetch_transactions(%State{state | wallet: wallet})
-          {:next_state, :transactions, state}
-        else
-          {:ok, state} = reduce_unspent(%State{state | wallet: wallet})
-          send state.parent, {:wallet, state.wallet}
-          {:stop, :normal, state}
-        end
-    else
-      {:next_state, :history, state}
-    end
-  end
   def handle_info({:libbitcoin_client, cmd, ref, raw_transaction}, :transactions, %State{ref: refs, transactions: transactions} = state)
     when cmd in ["transaction_pool.fetch_transaction", "blockchain.fetch_transaction"] do
     hash = Map.get(refs, ref)
     refs = Map.delete(refs, ref)
-    transaction = :libbitcoin.tx_decode(raw_transaction) |> Map.delete(:value)
-    transactions = Map.put(transactions, hash, transaction)
-    state = %State{state | transactions: transactions, ref: refs}
+    state = fetched_transaction(hash, raw_transaction, %State{state | ref: refs})
     if Map.size(refs) == 0 do
-      {:ok, state} = reduce_transactions(state)
-      {:ok, state} = reduce_unspent(state)
-      send state.parent, {:wallet, state.wallet}
+      {:ok, state} = send_wallet(state)
       {:stop, :normal, state}
     else
       {:next_state, :transactions, state, 5000}
     end
+  end
+  def handle_info({:libbitcoin_client_error, _cmd, ref, :timeout}, :transactions, %State{ref: refs} = state) do
+    hash = Map.get(refs, ref)
+    refs = Map.delete(refs, ref)
+    refs = fetch_transaction(%{hash: hash, height: 0}, refs)
+    :timer.send_after(5000, :give_up)
+    {:next_state, :transactions, %State{state | ref: refs}}
+  end
+  def handle_info({:libbitcoin_client_error, _cmd, ref, :not_found}, :transactions, %State{ref: refs} = state) do
+    hash = Map.get(refs, ref)
+    refs = Map.delete(refs, ref)
+    state = %State{state | ref: refs}
+    if Map.size(refs) == 0 do
+      {:ok, state} = send_wallet(state)
+      {:stop, :normal, state}
+    else
+      {:next_state, :transactions, state}
+    end
+  end
+  def handle_info(:give_up, :transactions, state) do
+    send state.parent, {:wallet, state.wallet}
+    {:stop, :gave_up, state}
   end
 
   def terminate(_, _, _state) do
@@ -112,17 +115,32 @@ defmodule Bitcoin.Voyager.WalletFSM do
     start_index = page * per_page
     transactions = Enum.slice(txs, start_index, start_index + per_page) ++ unspent
     transactions = Enum.uniq_by(transactions, fn(%{hash: hash}) -> hash end)
-    refs = Enum.reduce transactions, %{}, &fetch_transaction(&1, &2, client)
+    state = Enum.reduce transactions, state, &fetch_cached_transaction(&1, &2)
+    refs = Enum.reduce transactions, %{}, &fetch_transaction(&1, &2)
     {:ok, %State{state | ref: refs, wallet: %{wallet | transactions: transactions}}}
   end
 
-  def fetch_transaction(%{hash: hash, height: 0}, acc, client) do
+  def fetch_cached_transaction(%{hash: hash}, state) do
+    case Cache.get(Blockchain.TransactionHandler, [hash]) do
+      {:ok, raw_transaction} ->
+        fetched_transaction(hash, raw_transaction, state)
+      :not_found ->
+        state
+    end
+  end
+  def fetch_transaction(%{hash: hash, height: 0}, acc) do
     {:ok, ref} = Client.pool_transaction(client, hash)
     Map.put(acc, ref, hash)
   end
-  def fetch_transaction(%{hash: hash, height: height}, acc, client) do
+  def fetch_transaction(%{hash: hash, height: height}, acc) do
     {:ok, ref} = Client.blockchain_transaction(client, hash)
     Map.put(acc, ref, hash)
+  end
+
+  def fetched_transaction(hash, raw_transaction, state) do
+    transaction = :libbitcoin.tx_decode(raw_transaction) |> Map.delete(:value)
+    transactions = Map.put(state.transactions, hash, transaction)
+    %State{state | transactions: transactions}
   end
 
   def map_wallet(history, %State{txrefs: txrefs} = state) do
@@ -153,6 +171,13 @@ defmodule Bitcoin.Voyager.WalletFSM do
   def txref_value(:output, value), do: value
   def txref_value(:spend, value), do: -value
 
+  def send_wallet(state) do
+    {:ok, state} = reduce_transactions(state)
+    {:ok, state} = reduce_unspent(state)
+    send state.parent, {:wallet, state.wallet}
+    {:ok, state}
+  end
+
   def reduce_wallet(txrefs) do
     wallet = Enum.reduce txrefs, @empty_wallet, fn
       (%{spend_hash: @unspent_hash, value: value} = row,
@@ -175,14 +200,18 @@ defmodule Bitcoin.Voyager.WalletFSM do
   end
 
   def reduce_transaction(addresses, transactions, %{hash: hash, type: type} = row) do
-    %{inputs: inputs, outputs: outputs} = transaction = Map.get(transactions, hash)
-    row = Map.delete(row, :hash)
-    address_targets = if type == :spend, do: outputs, else: inputs
-    addrs = (for %{address: address} <- address_targets, do: address)
-      |> Enum.filter(fn(addr) -> !Set.member?(addresses, addr) end)
-    row
-      |> Map.merge(%{addresses: addrs})
-      |> Map.merge(transaction)
+    case Map.get(transactions, hash) do
+      %{inputs: inputs, outputs: outputs} = transaction ->
+        row = Map.delete(row, :hash)
+        address_targets = if type == :spend, do: outputs, else: inputs
+        addrs = (for %{address: address} <- address_targets, do: address)
+          |> Enum.filter(fn(addr) -> !Set.member?(addresses, addr) end)
+        row
+          |> Map.merge(%{addresses: addrs})
+          |> Map.merge(transaction)
+      nil ->
+        row
+    end
   end
 
   def reduce_unspent(%State{addresses: addresses, wallet: wallet, transactions: transactions} = state) do

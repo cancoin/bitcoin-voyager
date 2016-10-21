@@ -1,8 +1,6 @@
 defmodule Bitcoin.Voyager.Handlers.Blockchain.SpendHandler do
   alias Bitcoin.Voyager.Util
-
-  @moduledoc """
-  """
+  use Bitcoin.Voyager.Handler
 
   def command, do: :spend
 
@@ -26,6 +24,14 @@ defmodule Bitcoin.Voyager.Handlers.Blockchain.SpendHandler do
   end
   def transform_reply(other) do
     {:ok, %{other: other}}
+  end
+
+  def cache_name, do: :spend
+
+  def cache_ttl, do: 10
+
+  def cache_key([hash, index]) do
+    "#{hash}#{:binary.encode_unsigned(index)}"
   end
 
 end

@@ -1,8 +1,6 @@
 defmodule Bitcoin.Voyager.Handlers.Blockchain.StealthHandler do
   alias Bitcoin.Voyager.Util
-
-  @moduledoc """
-  """
+  use Bitcoin.Voyager.Handler
 
   def command, do: :stealth
 

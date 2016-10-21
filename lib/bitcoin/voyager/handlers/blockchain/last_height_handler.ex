@@ -1,7 +1,5 @@
 defmodule Bitcoin.Voyager.Handlers.Blockchain.LastHeightHandler do
-
-  @moduledoc """
-  """
+  use Bitcoin.Voyager.Handler
 
   def command, do: :last_height
 
@@ -13,4 +11,15 @@ defmodule Bitcoin.Voyager.Handlers.Blockchain.LastHeightHandler do
     {:ok, %{height: reply}}
   end
 
+  def cache_key([]) do
+    "latest"
+  end
+
+  def cache_ttl, do: 10
+
+  def cache_name, do: :height
+
+  def cache_deserialize(value) do
+    :binary.decode_unsigned(value)
+  end
 end

@@ -1,5 +1,6 @@
 defmodule Bitcoin.Voyager.Handlers.Protocol.BroadcastTransactionHandler do
   alias Bitcoin.Voyager.Util
+  use Bitcoin.Voyager.Handler
 
   def command, do: :broadcast_transaction
 

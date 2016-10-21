@@ -22,8 +22,8 @@ defmodule Bitcoin.Voyager.WalletHandler do
   def info({:wallet, wallet}, req, state) do
     {:ok, json} = JSX.encode(%{status: :success, data: wallet})
     {:ok, json} = JSX.prettify(json)
-    {:ok, req} = :cowboy_req.reply(200, [], json, req)
-    {:ok, req, state}
+    req = :cowboy_req.reply(200, [], json, req)
+    {:stop, req, state}
   end
 
   def transform_args(req) do

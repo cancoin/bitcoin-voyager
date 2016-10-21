@@ -1,6 +1,7 @@
 %{"base58": {:git, "https://github.com/cancoin/erl-base58.git", "dd22cf9fa475befb8258f4cf67d77484c0d7fd37", []},
   "bbmustache": {:hex, :bbmustache, "1.0.4"},
   "cf": {:hex, :cf, "0.2.1"},
+  "cherly": {:git, "https://github.com/lastcanal/cherly.git", "0b417ff7e7fb87319532b53cf6d247fecf98b6f0", [branch: "develop"]},
   "conform": {:hex, :conform, "0.17.0"},
   "cowboy": {:git, "https://github.com/ninenines/cowboy.git", "dbb636034f20736e16eb9d6c809217c9525b6cbd", [ref: "2.0.0-pre.3"]},
   "cowlib": {:git, "https://github.com/ninenines/cowlib.git", "8cf98c9f3d1292c1b08fca5ca99772ae912eaa86", [ref: "master"]},

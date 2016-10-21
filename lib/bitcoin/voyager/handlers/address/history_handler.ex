@@ -1,4 +1,5 @@
 defmodule Bitcoin.Voyager.Handlers.Address.HistoryHandler do
+  use Bitcoin.Voyager.Handler
 
   def command, do: :address_history
   #def command, do: "address.history"
@@ -27,5 +28,12 @@ defmodule Bitcoin.Voyager.Handlers.Address.HistoryHandler do
   def to_hex(hash) do
     Base.encode16(hash, case: :lower)
   end
+  
+  def cache_key([address, height]) do
+    "#{address}#{:binary.encode_unsigned(height)}"
+  end
 
+  def cache_ttl, do: 10
+
+  def cache_name, do: :history
 end

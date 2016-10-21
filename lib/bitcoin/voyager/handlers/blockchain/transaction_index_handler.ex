@@ -1,8 +1,6 @@
 defmodule Bitcoin.Voyager.Handlers.Blockchain.TransactionIndexHandler do
   alias Bitcoin.Voyager.Util
-
-  @moduledoc """
-  """
+  use Bitcoin.Voyager.Handler
 
   def command, do: :transaction_index
 
@@ -17,6 +15,24 @@ defmodule Bitcoin.Voyager.Handlers.Blockchain.TransactionIndexHandler do
   def transform_reply({height, index}) do
     {:ok, %{height: height, index: index}}
   end
+
+  def cache_name, do: :transaction_index
+
+  def cache_ttl, do: 0
+
+  def cache_key([hash]) do
+    hash
+  end
+
+  def cache_serialize({height, index}) do
+    <<height :: unsigned-integer-size(64), index :: unsigned-integer-size(64)>>
+  end
+
+  def cache_deserialize(<<height :: unsigned-integer-size(64), index :: unsigned-integer-size(64)>>) do
+    {height, index}
+  end
+
+
 
 end
 
