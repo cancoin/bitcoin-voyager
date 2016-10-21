@@ -39,6 +39,17 @@ defmodule Bitcoin.Voyager.Subscriber do
         :ok
     end
   end
+  def broadcast_payload(:block = type, {height, raw_header, hashes} = payload) when is_binary(raw_header) do
+    case :libbitcoin.header_decode(raw_header) do
+      %{hash: hash} = header ->
+        hash = Base.decode16!(hash, case: :lower)
+        :ok = Cache.put(Blockchain.BlockHeightHandler, [hash], height)
+        :ok = Cache.put(Blockchain.BlockHeaderHandler, [height], raw_header)
+        broadcast_payload(type, {height, header, hashes})
+      _ ->
+        :ok
+    end
+  end
   def broadcast_payload(type, payload) do
     :gproc.send({:p, :l, "subscribe.#{type}"}, {"subscribe.#{type}", payload})
     :ok
