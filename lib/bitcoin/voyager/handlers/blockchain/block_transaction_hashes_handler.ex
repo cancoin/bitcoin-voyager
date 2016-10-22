@@ -29,19 +29,19 @@ defmodule Bitcoin.Voyager.Handlers.Blockchain.BlockTransactionHashesHandler do
     hash
   end
 
-  def cache_serialize(hashes) do
+  def cache_serialize(hashes, _params) do
     :binary.list_to_bin(hashes)
   end
 
-  def cache_deserialize(hashes) do
-    cache_deserialize(hashes, [])
+  def cache_deserialize(hashes, params) do
+    cache_deserialize(hashes, params, [])
   end
 
-  defp cache_deserialize(<<>>, acc) do
+  defp cache_deserialize(<<>>, _params, acc) do
     Enum.reverse(acc)
   end
 
-  defp cache_deserialize(<<hash :: binary-size(32), tail :: binary>>, acc) do
+  defp cache_deserialize(<<hash :: binary-size(32), tail :: binary>>, _params, acc) do
     cache_deserialize(tail, [hash|acc])
   end
 

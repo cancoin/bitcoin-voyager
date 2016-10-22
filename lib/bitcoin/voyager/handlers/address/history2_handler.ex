@@ -37,11 +37,11 @@ defmodule Bitcoin.Voyager.Handlers.Address.History2Handler do
       |> format_row
   end
 
-  def cache_serialize(value) do
+  def cache_serialize(value, _params) do
     :erlang.term_to_binary(value)
   end
 
-  def cache_deserialize(value) do
+  def cache_deserialize(value, _params) do
     :erlang.binary_to_term(value)
   end
 

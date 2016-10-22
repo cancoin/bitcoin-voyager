@@ -1,26 +1,18 @@
 defmodule Bitcoin.Voyager.Handlers.TransactionPool.TransactionHandler do
+  alias Bitcoin.Voyager.Handlers.Blockchain.TransactionHandler
   alias Bitcoin.Voyager.Util
   use Bitcoin.Voyager.Handler
 
-  def command, do: :pool_transaction
-
-  def transform_args(%{hash: hash}) do
-    Util.decode_hex(hash)
-  end
-  def transform_args(_params) do
-    {:error, :invalid}
+  def command, do: fn(client, hash, _height, owner) ->
+    Libbitcoin.Client.pool_transaction(client, hash, owner)
   end
 
-  def transform_reply(reply) do
-    tx = :libbitcoin.tx_decode(reply)
-    {:ok, %{transaction: tx}}
-  end
+  defdelegate transform_args(parmas), to: TransactionHandler
+  defdelegate transform_reply(reply), to: TransactionHandler
+  defdelegate cache_name, to: TransactionHandler
+  defdelegate cache_ttl, to: TransactionHandler
+  defdelegate cache_key(params), to: TransactionHandler
+  defdelegate cache_serialize(value), to: TransactionHandler
+  defdelegate cache_deserialize(value), to: TransactionHandler
 
-  def cache_name, do: :transaction
-
-  def cache_ttl, do: 0
-
-  def cache_key([hash]) do
-    hash
-  end
 end

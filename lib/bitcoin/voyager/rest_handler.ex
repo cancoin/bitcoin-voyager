@@ -58,6 +58,10 @@ defmodule Bitcoin.Voyager.RESTHandler do
     end
   end
 
+  def send_command(command, args) when is_function command do
+    client = :pg2.get_closest_pid(Bitcoin.Voyager.Client)
+    apply command, [client] ++ args ++ [self]
+  end
   def send_command(command, args) do
     client = :pg2.get_closest_pid(Bitcoin.Voyager.Client)
     apply Libbitcoin.Client, command, [client] ++ args ++ [self]
