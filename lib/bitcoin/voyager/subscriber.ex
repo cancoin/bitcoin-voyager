@@ -29,7 +29,7 @@ defmodule Bitcoin.Voyager.Subscriber do
     case :libbitcoin.tx_decode(payload) do
       %{hash: hash} = transaction ->
         hash = Base.decode16!(hash, case: :lower)
-        :ok = Cache.put(Blockchain.TransactionHandler, [hash], payload, %{cached_height: 0})
+        :ok = Cache.put(Blockchain.TransactionHandler, [hash], payload, %{cache_height: 0})
         broadcast_payload(type, transaction)
       _ ->
         :ok
@@ -39,9 +39,9 @@ defmodule Bitcoin.Voyager.Subscriber do
     case :libbitcoin.header_decode(raw_header) do
       %{hash: hash} = header ->
         hash = Base.decode16!(hash, case: :lower)
-        :ok = Cache.set_chain_state(height: height, hash: hash)
-        :ok = Cache.put(Blockchain.BlockHeightHandler,[hash], height, %{cached_height: height})
-        :ok = Cache.put(Blockchain.BlockHeaderHandler, [height], raw_header, %{cached_height: height})
+        :ok = Cache.set_chain_state(cache_height: height)
+        :ok = Cache.put(Blockchain.BlockHeightHandler,[hash], height, %{cache_height: height})
+        :ok = Cache.put(Blockchain.BlockHeaderHandler, [height], raw_header, %{cache_height: height})
         broadcast_payload(type, {height, header, hashes})
       _ ->
         :ok
