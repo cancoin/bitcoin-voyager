@@ -81,7 +81,7 @@ defmodule Bitcoin.Voyager.Cache do
     :not_found
   end
   defp deserialize({:ok, <<cached_height :: unsigned-integer-size(32), _cache_reply :: binary>>}, module, %{cache_height: cache_height}) 
-    when cache_height > cached_height, do: :not_found
+    when cached_height < cache_height, do: :not_found
   defp deserialize({:ok, <<_height :: unsigned-integer-size(32), cache_reply :: binary>>}, module, params) do
     case module.cache_deserialize(cache_reply) do
       :not_found -> :not_found
