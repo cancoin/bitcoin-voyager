@@ -21,13 +21,26 @@ defmodule LibbitcoinVoyagerCacheTest do
     assert {:ok, %{transaction: %{hash: @hex_hash}}} = C.get(TransactionHandler, %{hash: @hex_hash}, [@hash])
   end
 
-  test "get with cache height" do
+  test "cache height" do
     assert :ok = C.set_chain_state(cache_height: 100)
     assert 100 = C.get_chain_state(:cache_height)
     assert :ok = C.put(TransactionHandler, [@hash], @raw_tx, %{cache_height: 100})
     assert {:ok, %{transaction: %{hash: @hex_hash}}} = C.get(TransactionHandler, %{hash: @hex_hash}, [@hash])
     assert :not_found = C.get(TransactionHandler, %{cache_height: 101, hash: @hex_hash}, [@hash])
     assert :ok = C.put(TransactionHandler, [@hash], @raw_tx, %{cache_height: 101})
+    assert :not_found = C.get(TransactionHandler, %{cache_height: 101, hash: @hex_hash}, [@hash])
+  end
+
+  test "ets cache height" do
+    assert :ok = C.set_chain_state(cache_height: 100)
+    assert 100 = C.get_chain_state(:cache_height)
+    assert :ok = C.put(TransactionHandler, [@hash], @raw_tx)
+    assert {:ok, %{transaction: %{hash: @hex_hash}}} = C.get(TransactionHandler, %{hash: @hex_hash}, [@hash])
+    assert :not_found = C.get(TransactionHandler, %{cache_height: 101, hash: @hex_hash}, [@hash])
+    assert :ok = C.set_chain_state(cache_height: 101)
+    assert 101 = C.get_chain_state(:cache_height)
+    assert :ok = C.put(TransactionHandler, [@hash], @raw_tx)
     assert {:ok, %{transaction: %{hash: @hex_hash}}} = C.get(TransactionHandler, %{cache_height: 101, hash: @hex_hash}, [@hash])
   end
+
 end

@@ -58,7 +58,7 @@ defmodule Bitcoin.Voyager.Cache do
   end
 
   def put(module, params, value) do
-    cache_height = get_chain_state(:height)
+    cache_height = get_chain_state(:cache_height)
     put(module, params, value, %{cache_height: cache_height})
   end
 
