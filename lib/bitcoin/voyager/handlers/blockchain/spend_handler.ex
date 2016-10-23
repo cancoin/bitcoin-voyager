@@ -34,5 +34,12 @@ defmodule Bitcoin.Voyager.Handlers.Blockchain.SpendHandler do
     "#{hash}#{:binary.encode_unsigned(index)}"
   end
 
+  def cache_serialize({hash, index}) do
+    <<index :: unsigned-integer-size(32), hash :: binary>>
+  end
+
+  def cache_deserialize(<<index :: unsigned-integer-size(32), hash :: binary>>) do
+    {hash, index}
+  end
 end
 

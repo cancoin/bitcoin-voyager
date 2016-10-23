@@ -15,7 +15,7 @@ defmodule Bitcoin.Voyager.Cache do
   ]
 
   def start_link do
-    :ets.new(:chain_state_table, [:named_table, read_concurrency: true])
+    :ets.new(@chain_state_table, [:named_table, :public, read_concurrency: true])
     caches = :application.get_env(:bitcoin_voyager, :caches, @caches)
     Enum.each caches, fn({name, size}) ->
       {:ok, _} = :cherly_sup.start_child(name, size)
@@ -25,46 +25,65 @@ defmodule Bitcoin.Voyager.Cache do
 
   def set_chain_state(state) do
     Enum.each state, fn({key, value}) ->
-      :ets.insert(:chain_state_table, {key, value})
+      :ets.insert(@chain_state_table, {key, value})
     end
     :ok
   end
 
   def get_chain_state(key) do
-    case :ets.lookup(:chain_state_table, key) do
+    case :ets.lookup(@chain_state_table, key) do
       [] -> nil
       state -> state[key]
     end
   end
 
-  def get(module, params \\ %{}) do
+  def get(module), do: get(module, %{}, [])
+
+  def get(module, %{cache_height: cache_height} = params, transformed_params) when is_integer(cache_height) do
     case module.cache_name do
       nil -> :not_found
       name ->
-        key = module.cache_key(params)
+        key = module.cache_key(transformed_params)
         :cherly_server.get(name, key) |> deserialize(module, params)
     end
   end
-
-  def put(module, params, value) do
-    height = get_chain_state(:height)
-    put(module, params, value, %{height: height})
+  def get(module, %{cache_height: cache_height} = params, transformed_params) when is_binary(cache_height) do
+    get(module, Map.put(params, :cache_height, String.to_integer(cache_height)), transformed_params)
+  end
+  def get(module, [], transformed_params) do
+    get(module, %{}, transformed_params)
+  end
+  def get(module, params, transformed_params) do
+    get(module, Map.put(params, :cache_height, 0), transformed_params)
   end
 
-  def put(module, params, value, chain_state) do
+  def put(module, params, value) do
+    cache_height = get_chain_state(:height)
+    put(module, params, value, %{cache_height: cache_height})
+  end
+
+  def put(module, params, value, %{cache_height: nil}) do
+    put(module, params, value, %{cache_height: 0})
+  end
+  def put(module, params, value, %{cache_height: cache_height}) do
     case module.cache_name do
       nil -> :ok
       name ->
+        serialized = module.cache_serialize(value)
         :cherly_server.put(name,
           module.cache_key(params),
-          module.cache_serialize(value, chain_state),
+          << cache_height :: unsigned-integer-size(32), serialized :: binary>>,
           module.cache_ttl)
     end
   end
 
-  defp deserialize(:not_found, _module, _params), do: :not_found
-  defp deserialize({:ok, cache_reply}, module, params) do
-    case module.cache_deserialize(cache_reply, params) do
+  defp deserialize(:not_found, _module, _params) do
+    :not_found
+  end
+  defp deserialize({:ok, <<cached_height :: unsigned-integer-size(32), _cache_reply :: binary>>}, module, %{cache_height: cache_height}) 
+    when cache_height > cached_height, do: :not_found
+  defp deserialize({:ok, <<_height :: unsigned-integer-size(32), cache_reply :: binary>>}, module, params) do
+    case module.cache_deserialize(cache_reply) do
       :not_found -> :not_found
       value -> module.transform_reply(value)
     end

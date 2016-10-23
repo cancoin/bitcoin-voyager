@@ -36,4 +36,12 @@ defmodule Bitcoin.Voyager.Handlers.Address.HistoryHandler do
   def cache_ttl, do: 10
 
   def cache_name, do: :history
+
+  def cache_serialize(value) do
+    :erlang.term_to_binary(value)
+  end
+
+  def cache_deserialize(value) do
+    :erlang.binary_to_term(value)
+  end
 end

@@ -24,11 +24,11 @@ defmodule Bitcoin.Voyager.Handlers.Blockchain.TransactionIndexHandler do
     hash
   end
 
-  def cache_serialize({height, index}, _params) do
+  def cache_serialize({height, index}) do
     <<height :: unsigned-integer-size(64), index :: unsigned-integer-size(64)>>
   end
 
-  def cache_deserialize(<<height :: unsigned-integer-size(64), index :: unsigned-integer-size(64)>>, _params) do
+  def cache_deserialize(<<height :: unsigned-integer-size(64), index :: unsigned-integer-size(64)>>) do
     {height, index}
   end
 
