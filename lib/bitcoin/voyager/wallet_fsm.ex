@@ -211,19 +211,29 @@ defmodule Bitcoin.Voyager.WalletFSM do
           |> Map.merge(transaction)
       nil ->
         row
+          |> Map.put(:hash, Base.encode16(hash, case: :lower))
     end
+  end
+  def reduce_transaction(addresses, transactions, row) do
+    row
   end
 
   def reduce_unspent(%State{addresses: addresses, wallet: wallet, transactions: transactions} = state) do
-    unspent = wallet |> Map.get(:unspent) |> Enum.map(fn(%{hash: hash, index: index}) ->
-      %{outputs: outputs} = transaction = Map.get(transactions, hash)
-      output = Enum.at(outputs, index)
-        |> Map.put(:index, index)
-        |> Map.put(:checksum, checksum(hash, index))
-      out = transaction
-        |> Map.delete(:inputs)
-        |> Map.delete(:outputs)
-        |> Map.merge(output)
+    unspent = wallet |> Map.get(:unspent) |> Enum.map(fn(%{hash: hash, index: index} = row) ->
+      case Map.get(transactions, hash) do
+        %{outputs: outputs} = transaction ->
+          output = Enum.at(outputs, index)
+            |> Map.put(:index, index)
+            |> Map.put(:checksum, checksum(hash, index))
+          out = transaction
+            |> Map.delete(:inputs)
+            |> Map.delete(:outputs)
+            |> Map.merge(output)
+        nil ->
+          row
+            |> Map.put(:hash, Base.encode16(hash, case: :lower))
+            |> Map.put(:checksum, checksum(hash, index))
+      end
     end)
 
     {:ok, %State{state | wallet:  %{wallet | unspent: unspent}}}
