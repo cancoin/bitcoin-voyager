@@ -5,13 +5,13 @@ defmodule Bitcoin.Voyager.RESTHandler do
   require Logger
 
   def init(req, [module]) when is_atom(module) do
-    {args, req} = extract_request_params(req)
-    case module.transform_args(args) do
+    {params, req} = extract_request_params(req)
+    case module.transform_args(params) do
       {:error, reason} ->
         {:ok, req} = :cowboy_req.reply(400, [], to_string(reason), req)
         {:shutdown, req, nil}
-      {:ok, params} ->
-         do_command(module, params, req)
+      {:ok, transformed_params} ->
+         do_command(module, params, transformed_params, req)
     end
   end
 
@@ -25,7 +25,7 @@ defmodule Bitcoin.Voyager.RESTHandler do
       {:error, reason} ->
         Logger.debug "transform error #{module}"
         {:ok, json} = JSX.encode(%{error: reason})
-        {:ok, req} = :cowboy_req.reply(500, [], json, req)
+        req = :cowboy_req.reply(500, [], json, req)
         {:stop, req, state}
     end
   end
@@ -46,18 +46,22 @@ defmodule Bitcoin.Voyager.RESTHandler do
     :ok
   end
 
-  def do_command(module, params, req) do
-    case Cache.get(module, params) do
+  def do_command(module, params, transformed_params, req) do
+    case Cache.get(module, params, transformed_params) do
       {:ok, value} ->
         {:ok, json} = JSX.encode(value)
         req = :cowboy_req.reply(200, [], json, req)
         {:ok, req, %{}}
       :not_found ->
-        {:ok, ref} = send_command(module.command, params)
-        {:cowboy_loop, req, %{ref: ref, params: params, module: module}, 2000}
+        {:ok, ref} = send_command(module.command, transformed_params)
+        {:cowboy_loop, req, %{ref: ref, params: transformed_params, module: module}, 2000}
     end
   end
 
+  def send_command(command, args) when is_function command do
+    client = :pg2.get_closest_pid(Bitcoin.Voyager.Client)
+    apply command, [client] ++ args ++ [self]
+  end
   def send_command(command, args) do
     client = :pg2.get_closest_pid(Bitcoin.Voyager.Client)
     apply Libbitcoin.Client, command, [client] ++ args ++ [self]
@@ -76,7 +80,6 @@ defmodule Bitcoin.Voyager.RESTHandler do
   end
   defp extract_request_params(req, "POST") do
     {:ok, form_data, req} = :cowboy_req.body_qs(req)
-    IO.inspect form_data
     args = Enum.into(form_data, %{}) |> Util.atomify
     {args, req}
   end
