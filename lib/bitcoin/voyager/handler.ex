@@ -11,7 +11,7 @@ defmodule Bitcoin.Voyager.Handler do
 
       def cache_ttl, do: 0
 
-      def cache_key, do: ""
+      def cache_key(params), do: ""
 
       def cache_name, do: nil
 
@@ -23,7 +23,7 @@ defmodule Bitcoin.Voyager.Handler do
       def cache_deserialize(value), do: value
 
       defoverridable [ command: 0, transform_args: 1, transform_reply: 1,
-                       cache_ttl: 0, cache_name: 0, cache_key: 0,
+                       cache_ttl: 0, cache_name: 0, cache_key: 1,
                        cache_serialize: 1, cache_deserialize: 1]
     end
   end

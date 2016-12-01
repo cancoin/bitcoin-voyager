@@ -120,8 +120,8 @@ defmodule Bitcoin.Voyager.WalletFSM do
     {:ok, %State{state | ref: refs, wallet: %{wallet | transactions: transactions}}}
   end
 
-  def fetch_cached_transaction(%{hash: hash}, state) do
-    case Cache.get(Blockchain.TransactionHandler, [hash]) do
+  def fetch_cached_transaction(%{hash: hash, height: height}, state) do
+    case Cache.get(Blockchain.TransactionHandler, %{cache_height: height}, [hash]) do
       {:ok, raw_transaction} ->
         fetched_transaction(hash, raw_transaction, state)
       :not_found ->

@@ -152,15 +152,15 @@ defmodule LibbitcoinVoyagerRESTTest do
   end
 
   @stealth_bits "11111111111111111"
-  @stealth_history [
-    %{"ephemkey" => "0269642b87b0898e1f079be72d194b86aca0b54eff41844ac28ec70c564db4991a",
-      "address" =>  "d4b516796c8be0b529d0aa6317b9087598f2d709",
-      "tx_hash" =>  "f12551534a2a8ff97ed80ee4742beae2569b663ba319070742d0f4bf88b654c3"}]
+  @stealth_history %{
+    "ephemkey" => "0269642b87b0898e1f079be72d194b86aca0b54eff41844ac28ec70c564db4991a",
+    "address" =>  "d4b516796c8be0b529d0aa6317b9087598f2d709",
+    "tx_hash" =>  "f12551534a2a8ff97ed80ee4742beae2569b663ba319070742d0f4bf88b654c3"}
 
   test "blockchain/stealth", ctx do
     ref = :gun.get(ctx[:conn], url "blockchain/stealth/#{@stealth_bits}/#{@from_height}")
     assert 200 = assert_response(ctx[:conn], ref)
-    assert @stealth_history == assert_data(ctx[:conn], ref)
+    assert [@stealth_history|_] = Enum.reverse(assert_data(ctx[:conn], ref))
   end
 
   defp assert_response(conn, ref) do

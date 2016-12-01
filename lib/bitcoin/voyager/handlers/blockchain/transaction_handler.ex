@@ -20,7 +20,6 @@ defmodule Bitcoin.Voyager.Handlers.Blockchain.TransactionHandler do
 
   def cache_ttl, do: 0
 
-  def cache_key([hash]) do
-    hash
-  end
+  def cache_key([hash]), do: hash
+
 end

@@ -13,10 +13,6 @@ defmodule Bitcoin.Voyager.Subscriber do
     GenServer.start_link(__MODULE__, [type, uri], [name: :"subscriber.#{type}"])
   end
 
-  def init([type, nil]) do
-    Logger.info("disabling #{type} subscriptions due to missing configuration")
-    {:ok, %State{type: type, uri: nil, client: nil}}
-  end
   def init([type, uri]) do
     {:ok, client} = Subscriber.start_link(type, uri)
     :ok = Subscriber.controlling_process(client)
@@ -33,7 +29,7 @@ defmodule Bitcoin.Voyager.Subscriber do
     case :libbitcoin.tx_decode(payload) do
       %{hash: hash} = transaction ->
         hash = Base.decode16!(hash, case: :lower)
-        :ok = Cache.put(Blockchain.TransactionHandler, [hash], payload)
+        :ok = Cache.put(Blockchain.TransactionHandler, [hash], payload, %{cache_height: 0})
         broadcast_payload(type, transaction)
       _ ->
         :ok
@@ -43,8 +39,9 @@ defmodule Bitcoin.Voyager.Subscriber do
     case :libbitcoin.header_decode(raw_header) do
       %{hash: hash} = header ->
         hash = Base.decode16!(hash, case: :lower)
-        :ok = Cache.put(Blockchain.BlockHeightHandler, [hash], height)
-        :ok = Cache.put(Blockchain.BlockHeaderHandler, [height], raw_header)
+        :ok = Cache.set_chain_state(cache_height: height)
+        :ok = Cache.put(Blockchain.BlockHeightHandler,[hash], height, %{cache_height: height})
+        :ok = Cache.put(Blockchain.BlockHeaderHandler, [height], raw_header, %{cache_height: height})
         broadcast_payload(type, {height, header, hashes})
       _ ->
         :ok
