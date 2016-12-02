@@ -14,7 +14,7 @@
   "gun": {:git, "https://github.com/ninenines/gun.git", "d88f3675dba9e066ef339789d8c223358f744aac", [ref: "master"]},
   "inflex": {:hex, :inflex, "1.5.0", "e4ff5d900280b2011b24d1ac1c4590986ee5add2ea644c9894e72213cf93ff0b", [:mix], []},
   "jsx": {:hex, :jsx, "2.6.2", "213721e058da0587a4bce3cc8a00ff6684ced229c8f9223245c6ff2c88fbaa5a", [:mix, :rebar], []},
-  "libbitcoin": {:git, "https://github.com/cancoin/libbitcoin-nif.git", "4917cc5601bf2aec1fb688dff3a9451df745e40d", []},
+  "libbitcoin": {:git, "https://github.com/cancoin/libbitcoin-nif.git", "5493cf636d202dab404c10fcf3f47b3b29771016", []},
   "libbitcoin_client": {:git, "https://github.com/cancoin/elixir-libbitcoin-client.git", "7349288d5c01f0752f92da070d76e58b21975912", []},
   "neotoma": {:hex, :neotoma, "1.7.3"},
   "providers": {:hex, :providers, "1.6.0", "db0e2f9043ae60c0155205fcd238d68516331d0e5146155e33d1e79dc452964a", [:rebar3], [{:getopt, "0.8.2", [hex: :getopt, optional: false]}]},
