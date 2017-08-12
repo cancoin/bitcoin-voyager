@@ -27,9 +27,11 @@ defmodule Bitcoin.Voyager.WalletHandler do
   end
 
   def transform_args(req) do
+    qs_vals = :cowboy_req.parse_qs(req) |> Enum.into(%{})
     {:ok, form_data, req} = :cowboy_req.body_qs(req)
     data = form_data
       |> Enum.into(%{"page" => 0, "per_page" => 20})
+      |> Map.merge(qs_vals)
       |> Util.atomify
     {:ok, data, req}
   end
